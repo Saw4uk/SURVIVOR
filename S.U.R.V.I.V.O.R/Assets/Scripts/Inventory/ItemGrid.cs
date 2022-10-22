@@ -18,6 +18,8 @@ public class ItemGrid : MonoBehaviour
 
     private Item[,] inventoryItemSlot;
 
+    [HideInInspector] public List<Item> items = new();
+
     private RectTransform rectTransform;
 
     [SerializeField] private int gridSizeWidth = 10;
@@ -103,6 +105,8 @@ public class ItemGrid : MonoBehaviour
 
         var position = GetPositionOnGrid(item, posX, posY);
         itemRectTransform.localPosition = position;
+        
+        items.Add(item);
     }
 
     public Vector2 GetPositionOnGrid(Item item, int posX, int posY)
@@ -140,6 +144,8 @@ public class ItemGrid : MonoBehaviour
         var returnedItem = inventoryItemSlot[x, y];
         if (returnedItem == null) return null;
         RemoveGridReference(returnedItem);
+
+        items.Remove(returnedItem);
 
         inventoryItemSlot[x, y] = null;
         return returnedItem;
