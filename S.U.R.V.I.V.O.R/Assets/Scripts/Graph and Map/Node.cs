@@ -1,13 +1,12 @@
 using System.Collections;
 using System.Collections.Generic;
-using Assets.Scripts;
 using UnityEngine;
 
 namespace Graph_and_Map
 {
     public class Node : MonoBehaviour, IEnumerable<(Node start, Node end)>
     {
-        [HideInInspector]public List<Node> neighborhoods;
+        public List<Node> neighborhoods;
         public Location location;
         private LineRenderer line;
         public Vector2 positionIn2D => new(transform.position.x,transform.position.z);
