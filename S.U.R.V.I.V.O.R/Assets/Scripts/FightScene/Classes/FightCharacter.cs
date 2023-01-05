@@ -43,7 +43,7 @@ public class FightCharacter : MonoBehaviour
     {
         var shootDirection = targetObj.transform.position - transform.position;
         var ray = Physics.Raycast(transform.position, shootDirection, out var hit);
-        if (hit.transform.gameObject.GetComponent<FightCharacter>() != null)
+        if (hit.transform.gameObject.GetComponent<FightCharacter>())
         {
             TargetToHit = targetObj;
             Attack();

@@ -29,7 +29,7 @@ public class FightSceneController : MonoBehaviour
     private List<Vector3> allySpawnPoints;
     private List<Vector3> enemySpawnPoints;
 
-    void Awake()
+    private void Awake()
     {
         if (Instance == null)
         {
@@ -51,13 +51,12 @@ public class FightSceneController : MonoBehaviour
         InitializeCharacters();
         NodesNav.InitializeNodesLists(graph);
         Debug.Log(UIController.Instance);
-        UIController.Instance.CreateQueueCards();
+        UIController.Instance.CreateUI();
 
         StateController.MakeAvailablePhases();
         CharacterObj = CharactersQueue.Dequeue();
         AI.CurrentCharacterObj = CharacterObj;
         Debug.Log(CharactersQueue.Count);
-        Debug.Log(CharacterObj);
         DrawAreas();
         State = FightState.Sleeping;
         SetNearestNodeToCurrentCharacter();
@@ -96,8 +95,7 @@ public class FightSceneController : MonoBehaviour
             var decision = AI.MakeDecision(CharactersQueue);
             MakeAction(decision.State, decision.Target);
         }
-
-
+        
         if (State == FightState.Moving || State == FightState.Fighting)
         {
             if (NodesNav.IsEndMoveCharacter())
@@ -182,7 +180,7 @@ public class FightSceneController : MonoBehaviour
             CharactersQueue.Enqueue(Characters[i]);
         }
 
-        Debug.Log("CharacteQueue Count: " + CharactersQueue.Count);
+        Debug.Log("CharacterQueue Count: " + CharactersQueue.Count);
     }
 
     private void CharacterReachTarget()
@@ -199,6 +197,7 @@ public class FightSceneController : MonoBehaviour
             //DeleteDeathCharacterFromQueue();
         }
         DrawAreas();
+        UIController.Instance.RedrawGroupCharacterCards();
         FightSceneController.State = FightState.Sleeping;
         Debug.Log("Sleeping Phase");
     }
@@ -225,9 +224,12 @@ public class FightSceneController : MonoBehaviour
 
     private GameObject GetNextCharacter()
     {
-        CharacterObj.GetComponent<FightCharacter>().ResetEnergy();
+        var fightCharacter = CharacterObj.GetComponent<FightCharacter>();
+        fightCharacter.ResetEnergy();
+        UIController.Instance.RedrawGroupCharacterCards();
+        
         var nextCharacter = CharactersQueue.Dequeue();
-        while (nextCharacter == null || !nextCharacter.GetComponent<FightCharacter>().Alive)
+        while (!nextCharacter || !nextCharacter.GetComponent<FightCharacter>().Alive)
         {
             nextCharacter = CharactersQueue.Dequeue();
         }

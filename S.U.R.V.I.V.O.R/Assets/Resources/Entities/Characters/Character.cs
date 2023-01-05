@@ -69,6 +69,6 @@ public class Character : Entity
     
     public override void Attack(IEnumerable<BodyPart> targets, float distance)
     {
-        targets.First().TakeDamage(new DamageInfo(15f));
+        targets.First().TakeDamage(new DamageInfo(15100f));
     }
 }

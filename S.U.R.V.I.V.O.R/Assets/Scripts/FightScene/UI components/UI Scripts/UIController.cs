@@ -1,6 +1,7 @@
 using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
+using Unity.VisualScripting;
 using UnityEngine.UI;
 using UnityEngine;
 
@@ -9,12 +10,15 @@ public class UIController : MonoBehaviour
     public static UIController Instance { get; private set; }
 
     [SerializeField] private GameObject queueCardPrefab;
+    [SerializeField] private GameObject groupCharacterCardPrefab;
     [SerializeField] private GameObject queuePanel;
+    [SerializeField] private GameObject groupPanel;
     private Queue<GameObject> cardsQueue = new Queue<GameObject>();
+    private List<GameObject> groupCards = new List<GameObject>();
 
     //private const int MaxDrawCardsCount = 5;
     
-    void Awake()
+    private void Awake()
     {
         if (Instance == null)
         {
@@ -26,7 +30,39 @@ public class UIController : MonoBehaviour
         }
     }
 
-    public void CreateQueueCards()
+    public void CreateUI()
+    {
+        CreateGroupCharactersCards();
+        CreateQueueCards();
+    }
+
+    private void CreateGroupCharactersCards()
+    {
+        foreach (var fCharacter in FightSceneController.Instance.Characters
+                     .Select(obj => obj.GetComponent<FightCharacter>())
+                     .Where(fCharacter => fCharacter.Type == CharacterType.Ally))
+        {
+            var initPos = groupPanel.transform.position + 
+                          new Vector3(0, (1.5f - groupCards.Count) 
+                                         * groupCharacterCardPrefab.GetComponent<RectTransform>().rect.height, 0);
+            var card = Instantiate(groupCharacterCardPrefab, initPos, Quaternion.identity);
+            card.AddComponent<UIGroupCharacterCard>();
+            card.GetComponent<UIGroupCharacterCard>().FightCharacter = fCharacter;
+            groupCards.Add(card);
+            
+            var cardT = card.transform;
+            var entityCharacter = fCharacter.Entity as Character;
+            cardT.parent = groupPanel.transform;
+            cardT.Find("CharacterName").GetComponent<Text>().text
+                = $"{entityCharacter.FirstName} {entityCharacter.Surname}";
+            cardT.Find("Photo").GetComponent<Image>().sprite = entityCharacter.Sprite;
+            cardT.Find("Health").GetComponent<Text>().text = (100).ToString();
+            cardT.Find("Energy").GetComponent<Text>().text = fCharacter.RemainingEnergy.ToString();
+        }
+
+    }
+
+    private void CreateQueueCards()
     {
         foreach (var fightCharacter in FightSceneController.CharactersQueue
                                        .Select(obj => obj.GetComponent<FightCharacter>()))
@@ -58,6 +94,16 @@ public class UIController : MonoBehaviour
 
         ShiftCards();
         cardsQueue.Enqueue(active);
+    }
+
+    public void RedrawGroupCharacterCards()
+    {
+        foreach (var card in groupCards)
+        {
+            var character = card.GetComponent<UIGroupCharacterCard>().FightCharacter;
+            card.transform.Find("Energy").GetComponent<Text>().text 
+                = character.RemainingEnergy.ToString();
+        }
     }
 
     public void DeleteDeathCharacterCard(FightCharacter character)
